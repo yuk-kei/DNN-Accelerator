@@ -436,5 +436,8 @@ int main(int argc, char **argv)
 #endif
     cout << endl << "Accuracy = " << float(num_correct)/NUM_TESTS * 100.0 << 
                                                             "%" << std::endl;
+    std::cout << "Press any key to continue..." << std::endl;
+    // Wait for user input
+    std::cin.get();
     return 0;
 }
