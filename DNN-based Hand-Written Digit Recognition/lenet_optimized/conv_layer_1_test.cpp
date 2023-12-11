@@ -2,32 +2,40 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include "conv_layer_1.cpp"
+#include "conv_layer_1.h"
 
 
-float relu_tb(float input) {
+float relu_test(float input) {
     return (input > 0) ? input : 0;
+}
+
+void convolution1_sw(float input[1][32][32], float weights[6][1][5][5], float bias[6], float output[6][28][28]) {
+    for(int output_channel = 0; output_channel < 6; output_channel++) {
+        for(int output_row = 0; output_row < 28; output_row++) {
+            for(int output_col = 0; output_col < 28; output_col++) {
+                float sum = 0.0;
+                for(int kernel_row = 0; kernel_row < 5; kernel_row++) {
+                    for(int kernel_col = 0; kernel_col < 5; kernel_col++) {
+                        sum += weights[output_channel][0][kernel_row][kernel_col] * input[0][output_row + kernel_row][output_col + kernel_col];
+                    }
+                }
+                output[output_channel][output_row][output_col] = sum + bias[output_channel];
+            }
+        }
+    }
 }
 
 void relu1_sw(float input[6][28][28], float output[6][28][28]) {
     for(int channel = 0; channel < 6; channel++) {
         for(int row = 0; row < 28; row++) {
             for(int col = 0; col < 28; col++) {
-                output[channel][row][col] = relu_tb(input[channel][row][col]);
+                output[channel][row][col] = relu_test(input[channel][row][col]);
             }
         }
     }
 }
 
-void relu2_sw(float input[6][14][14], float output[6][14][14]) {
-    for(int channel = 0; channel < 6; channel++) {
-        for(int row = 0; row < 14; row++) {
-            for(int col = 0; col < 14; col++) {
-                output[channel][row][col] = relu_tb(input[channel][row][col]);
-            }
-        }
-    }
-}
+
 
 void max_pooling2_sw(float input[6][28][28], float output[6][14][14]) {
     for(int channel = 0; channel < 6; channel++) {
@@ -45,22 +53,17 @@ void max_pooling2_sw(float input[6][28][28], float output[6][14][14]) {
     }
 }
 
-int convolution1_sw(float input[1][32][32], float weights[6][1][5][5], float bias[6], float output[6][28][28]) {
-    for(int output_channel = 0; output_channel < 6; output_channel++) {
-        for(int output_row = 0; output_row < 28; output_row++) {
-            for(int output_col = 0; output_col < 28; output_col++) {
-                float sum = 0.0;
-                for(int kernel_row = 0; kernel_row < 5; kernel_row++) {
-                    for(int kernel_col = 0; kernel_col < 5; kernel_col++) {
-                        sum += weights[output_channel][0][kernel_row][kernel_col] * input[0][output_row + kernel_row][output_col + kernel_col];
-                    }
-                }
-                output[output_channel][output_row][output_col] = sum + bias[output_channel];
+
+void relu2_sw(float input[6][14][14], float output[6][14][14]) {
+    for(int channel = 0; channel < 6; channel++) {
+        for(int row = 0; row < 14; row++) {
+            for(int col = 0; col < 14; col++) {
+                output[channel][row][col] = relu_test(input[channel][row][col]);
             }
         }
     }
-    return 0;
 }
+
 
 bool compare_outputs(float output1[6][14][14], float output2[6][14][14]) {
     for (int channel = 0; channel < 6; channel++) {
@@ -73,6 +76,18 @@ bool compare_outputs(float output1[6][14][14], float output2[6][14][14]) {
         }
     }
     return true;
+}
+
+void print_output(float output[6][14][14]) {
+    for (int channel = 0; channel < 6; channel++) {
+        for (int row = 0; row < 14; row++) {
+            for (int col = 0; col < 14; col++) {
+                printf("%f ", output[channel][row][col]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
 }
 
 int main() {
@@ -112,7 +127,7 @@ int main() {
     relu1_sw(output_software_a, output_software_b);
     max_pooling2_sw(output_software_b, output_software_c);
     relu2_sw(output_software_c, output_software_final);
-    convolution_hw(input_image, weights, biases, output_hardware);
+    convolution1_hw(input_image, weights, biases, output_hardware);
 
     // Compare software and hardware outputs
     bool is_equal = compare_outputs(output_software_final, output_hardware);
@@ -126,12 +141,14 @@ int main() {
 
     // Optional: Print outputs for detailed comparison
     printf("[TEST_BENCH] Output Software: ");
+    // print_output(output_software_final);
     for (int row = 0; row < 14; row++) {
         printf("%f ", output_software_final[1][row][7]);
     }
     printf("\n");
 
     printf("[TEST_BENCH] Output Hardware: ");
+    // print_output(output_hardware);
     for (int row = 0; row < 14; row++) {
         printf("%f ", output_hardware[1][row][7]);
     }
