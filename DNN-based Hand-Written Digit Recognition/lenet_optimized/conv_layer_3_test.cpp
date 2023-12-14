@@ -9,7 +9,7 @@ float relu_test(float input) {
     return (input > 0) ? input : 0;
 }
 
-void convolution5_sw(float input[16][5][5], float weights[120][16][5][5], 
+void convolution5_sw(float input[16][5][5], float weights[120][16][5][5],
                   float bias[120], float output[120][1][1]) {
     for(int co = 0; co < 120; co++) {
         float sum = 0;
@@ -57,23 +57,25 @@ int main() {
     float output_software_final[120][1][1];
 
     // Initialize input, weights, and biases with random values
-	for(int i = 0; i < 6; i++) {
-		for(int j = 0; j < 14; j++) {
-			for(int k = 0; k < 14; k++) {
+	for(int i = 0; i < 16; i++) {
+		for(int j = 0; j < 5; j++) {
+			for(int k = 0; k < 5; k++) {
                 input_image[i][j][k] = (float)(rand() % 100) / 100.0 - 0.5;
             }
         }
     }
 
-    for(int channel = 0; channel < 16; channel++) {
-        for(int kernel_row = 0; kernel_row < 6; kernel_row++) {
-            for(int kernel_col = 0; kernel_col < 5; kernel_col++) {
-                weights[channel][0][kernel_row][kernel_col] = (float)(rand() % 100) / 100.0 - 0.5;
+    for(int channel = 0; channel < 120; channel++) {
+    	for(int m = 0; m < 16; m++){
+    		for(int kernel_row = 0; kernel_row < 5; kernel_row++) {
+    			for(int kernel_col = 0; kernel_col < 5; kernel_col++) {
+    				weights[channel][m][kernel_row][kernel_col] = (float)(rand() % 100) / 100.0 - 0.5;
+            	}
             }
         }
     }
 
-    for(int channel = 0; channel < 16; channel++) {
+    for(int channel = 0; channel < 120; channel++) {
         biases[channel] = (float)(rand() % 100) / 100.0 - 0.5;
     }
 
@@ -95,15 +97,15 @@ int main() {
 
     // Optional: Print outputs for detailed comparison
     printf("[TEST_BENCH] Output Software: ");
-    // print_output(output_software_final);
-    for (int row = 0; row < 14; row++) {
+    print_output(output_software_final);
+    for (int row = 0; row < 120; row++) {
         printf("%f ", output_software_final[row][0][0]);
     }
     printf("\n");
 
     printf("[TEST_BENCH] Output Hardware: ");
-   // print_output(output_hardware);
-    for (int row = 0; row < 14; row++) {
+    print_output(output_hardware);
+    for (int row = 0; row < 120; row++) {
         printf("%f ", output_hardware[row][0][0]);
     }
     printf("\n");

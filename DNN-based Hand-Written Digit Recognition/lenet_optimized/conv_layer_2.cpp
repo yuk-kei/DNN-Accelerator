@@ -26,7 +26,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	float sum = 0.0;
 
 	for(int i = 0; i < 6; i++) {
-        #pragma HLS pipeline II=1
 		for(int j = 0; j < 14; j++) {
 			for(int k = 0; k < 14; k++) {
             #pragma HLS unroll FACTOR=32
@@ -38,7 +37,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	for(int i = 0; i < 16; i++) {
 		for(int j = 0; j < 6; j++) {
 			for(int k = 0; k < 5; k++) {
-            #pragma HLS pipeline II=1
 				for(int l = 0; l < 5; l++) {
                 #pragma HLS unroll FACTOR=5
 					conv_weights[i][j][k][l] = weights[i][j][k][l];
@@ -55,7 +53,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	/* Convolution 3 */
 	for(int co = 0; co < 16; co++) {
 		for(int h = 0; h < 10; h++) {
-        #pragma HLS pipeline II=1
 			for(int w = 0; w < 10; w++) {
 				sum = 0;
 				for(int i = 0, m = 0; i < 5; i++, m++) {
@@ -74,7 +71,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	/* ReLU 3 */
 	for(int i = 0; i < 16; i++) {
 		for(int j = 0; j < 10; j++) {
-        #pragma HLS pipeline II=1
 			for(int k = 0; k < 10; k++) {
             #pragma HLS unroll FACTOR=10
 				relu3_output[i][j][k] = relu(conv_output[i][j][k]);
@@ -103,7 +99,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	/* ReLU 4 */
 	for(int i = 0; i < 16; i++) {
 		for(int j = 0; j < 5; j++) {
-        #pragma HLS pipeline II=1
 			for(int k = 0; k < 5; k++) {
             #pragma HLS unroll FACTOR=5
 				relu4_output[i][j][k] = relu(pooling4_output[i][j][k]);
@@ -114,7 +109,6 @@ void convolution3_hw(float input[6][14][14], float weights[16][6][5][5], float b
 	/* Copying data back to output */
 	for(int i = 0; i < 16; i++) {
         for(int j = 0; j < 5; j++) {
-        #pragma HLS pipeline II=1
 			for(int k = 0; k < 5; k++) {
             #pragma HLS unroll FACTOR=5
 				output[i][j][k] = relu4_output[i][j][k];

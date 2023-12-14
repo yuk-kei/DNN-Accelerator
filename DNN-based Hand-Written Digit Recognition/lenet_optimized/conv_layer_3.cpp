@@ -24,7 +24,6 @@ void convolution5_hw(float input[16][5][5], float weights[120][16][5][5], float 
 	float sum = 0.0;
 
 	for(int i = 0; i < 16; i++) {
-	#pragma HLS pipeline II=1
 		for(int j = 0; j < 5; j++) {
 			for(int k = 0; k < 5; k++) {
 			#pragma HLS unroll FACTOR=5
@@ -36,7 +35,6 @@ void convolution5_hw(float input[16][5][5], float weights[120][16][5][5], float 
 	for(int i = 0; i < 120; i++) {
 		for(int j = 0; j < 16; j++) {
 			for(int k = 0; k < 5; k++) {
-			#pragma HLS pipeline II=1
 				for(int l = 0; l < 5; l++) {
 				#pragma HLS unroll FACTOR=5
 					conv_weights[i][j][k][l] = weights[i][j][k][l];
@@ -52,12 +50,11 @@ void convolution5_hw(float input[16][5][5], float weights[120][16][5][5], float 
 
 	/* Convolution 5 */
 	for(int co = 0; co < 120; co++) {
-	#pragma HLS pipeline II=1
 		sum = 0;
 		for(int i = 0, m = 0; i < 5; i++, m++) {
 			for(int j = 0, n = 0; j < 5; j++, n++) {
 				for (int ci = 0; ci < 16; ci++) {
-				#pragma HLS unroll FACTOR=16
+				#pragma HLS unroll FACTOR=8
 					sum += conv_weights[co][ci][m][n] * conv_inputs[ci][i][j];
 				}
 			}

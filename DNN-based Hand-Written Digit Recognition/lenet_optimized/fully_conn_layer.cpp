@@ -35,7 +35,6 @@ void fully_connected6_hw(float input[120][1][1], float weights[10][120][1][1], f
 
     /* Fully Connected Layer 6 */ 
     for(int n = 0; n < 10; n++) {
-    #pragma HLS pipeline II=1
         output[n] = 0;
         for(int c = 0; c < 120; c++){
         #pragma HLS unroll factor=120
