@@ -154,6 +154,30 @@ def fully_connected_6(input, weights, bias, output_shape):
 
     return output
 
+def convolution5_op(input, weights, bias, output_shape):
+    """
+    Optimized convolution function using NumPy.
+    """
+    input_reshaped = input.reshape(1, -1)  # Reshape input to 1D
+    weights_reshaped = weights.reshape(output_shape[0], -1)  # Reshape weights to 2D
+    output = np.dot(weights_reshaped, input_reshaped.T).reshape(output_shape) + bias.reshape(output_shape)
+    return output
+
+def relu_conv_op(input, output_shape):
+    """
+    ReLU activation function for convolution layer using NumPy.
+    """
+    return np.maximum(input, 0)  # Apply ReLU element-wise
+
+def fully_connected_6_op(input, weights, bias, output_shape):
+    """
+    Fully connected layer using NumPy.
+    """
+    input_reshaped = input.reshape(-1)  # Flatten input to 1D
+    weights_reshaped = weights.reshape(output_shape[0], -1)  # Reshape weights to 2D
+    output = np.dot(weights_reshaped, input_reshaped) + bias
+    return output
+
 def parse_mnist_images(filename):
     with open(filename, 'rb') as f:
         magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
@@ -214,9 +238,9 @@ def main():
      fc6_bias) = parse_parameters("params.bin")
 
     num_correct = 0
-    start_time = datetime.now()
+    start_time = time.time()
 
-    for k in range(NUM_TESTS):
+    for k in range(100):
         print(f"new image index{k}")
         img = get_image(images, k)
         img = img.reshape((1, 32, 32))
@@ -224,25 +248,32 @@ def main():
         # Forward pass through the network
         start_time = time.time()
         conv1 = convolution1(img, conv1_weights, conv1_bias, (6, 28, 28))
-        relu1 = relu(conv1)
+        relu1 = relu_conv(conv1, (6, 28, 28))
         pool2 = max_pooling(relu1, (6, 14, 14))
-        
-        conv3 = convolution3(pool2, conv3_weights, conv3_bias, (16, 10, 10))
-        relu3 = relu(conv3)
-        pool4 = max_pooling(relu3, (16, 5, 5))
-        conv5 = convolution5(pool4, conv5_weights, conv5_bias, (120, 1, 1))
-        relu5 = relu(conv5)
         print(" time: ", time.time() - start_time)
-        fc6 = fully_connected_6(relu5, fc6_weights, fc6_bias, (10, ))
-
+        start_time = time.time()
+        conv3 = convolution3(pool2, conv3_weights, conv3_bias, (16, 10, 10))
+        relu3 = relu_conv(conv3, (16, 10, 10))
+        pool4 = max_pooling(relu3, (16, 5, 5))
+        relu4 = relu_conv(pool4, (16, 5, 5))
+        print(" time: ", time.time() - start_time)
+        start_time = time.time()
+        conv5 = convolution5_op(relu4, conv5_weights, conv5_bias, (120, 1, 1))
+        relu5 = relu_conv_op(conv5, (120, 1, 1))
+        print(" time: ", time.time() - start_time)
+        start_time = time.time()
+        fc6 = fully_connected_6_op(relu5, fc6_weights, fc6_bias, (10, ))
+        
         # Index of the largest output is the result
         result = np.argmax(fc6)
         
         if result == labels[k]:
             num_correct += 1
+        
 
-    end_time = datetime.now()
-    duration = (end_time - start_time).total_seconds()
+    end_time = time.time()
+    duration = end_time - start_time
+    print("Duration: ", duration, "seconds")
     print(f"Accuracy = {num_correct / NUM_TESTS * 100}%")
     print(f"Total time: {duration} seconds")
 
