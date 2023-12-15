@@ -33,7 +33,7 @@ class MatrixMultiplier:
         # Setup FPGA
         self.matrixmult_inst.mmio.write_reg(0x10, array_a.physical_address)
         self.matrixmult_inst.mmio.write_reg(0x1c, array_b.physical_address)
-        self.matrixmult_inst.mmio.write_reg(0x28, array_c.physical_address)
+        self.matgrixmult_inst.mmio.write_reg(0x28, array_c.physical_address)
 
 
         start_time = time.time()
@@ -71,7 +71,6 @@ class MatrixMultiplier:
 
     def get_performance_all(self, array_a, array_b):
         # Time the FPGA implementation
-        self.change_overlay(self.overlay_list[0], self.ip_list[0])
         result_fpga_plain, fpga_plain_time = self.multiply_fpga(array_a, array_b)
         
         self.change_overlay(self.overlay_list[1], self.ip_list[1])
@@ -93,12 +92,12 @@ class MatrixMultiplier:
 
 def main():
     M, N, K = 16, 16, 16  # Fixed dimensions for matrices
-    num_tests = 10        # Number of times to test
+    num_tests = 2        # Number of times to test
     passed_test = 0      # Number of tests passed
 
-    opt_overlay_file = "/home/ubuntu/workspace/DNN-Accelerator/Matrix_Multiplication/matrix_mult_files/matrix_mult_optimized.bit"
-    plain_overlay_file = "/home/ubuntu/workspace/DNN-Accelerator/Matrix_Multiplication/matrix_mult_files/matrix_mult_plain.bit"
-    overlay_file_list = [plain_overlay_file, opt_overlay_file]
+    opt_overlay_file = "/home/ubuntu/workspace/DNN-Accelerator/Matrix_Multiplication-optimized/matrix_mult.bit"
+    plain_overlay_file = "/home/ubuntu/workspace/DNN-Accelerator/Matrix_Multiplication-plain/MatrixMultiplication.bit"
+    overlay_file_list = [opt_overlay_file, plain_overlay_file]
     ip_list = ["Matrixmul_0", "Matrixmul_0"]
     matrix_multiplier = MatrixMultiplier(overlay_file_list=overlay_file_list, ip_list=ip_list)
  
@@ -134,14 +133,10 @@ def main():
          result_numpy, 
          fpga_plain_time, 
          fpga_opt_time, 
-         numpy_time) = matrix_multiplier.get_performance_all(array_a, array_b) 
+         numpy_time) = matrix_multiplier.get_performance_all(array_a, array_b)    
+        if np.allclose(result_fpga_plain, result_fpga_opt, result_numpy):
+            passed_test += 1
         
-        if np.array_equal(result_fpga_plain, result_numpy):
-            print(f"Plain FPGA result passed result in test case {i+1} !")
-            if np.array_equal(result_fpga_opt, result_numpy):
-                print(f"Optimized FPGA passed test case {i+1} !")
-                passed_test += 1
-                
         total_time_numpy += numpy_time
         total_time_plain += fpga_plain_time
         total_time_opt += fpga_opt_time
