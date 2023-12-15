@@ -258,8 +258,8 @@ def main():
         relu4 = relu_conv(pool4, (16, 5, 5))
         print(" time: ", time.time() - start_time)
         start_time = time.time()
-        conv5 = convolution5_op(relu4, conv5_weights, conv5_bias, (120, 1, 1))
-        relu5 = relu_conv_op(conv5, (120, 1, 1))
+        conv5 = convolution5(relu4, conv5_weights, conv5_bias, (120, 1, 1))
+        relu5 = relu_conv(conv5, (120, 1, 1))
         print(" time: ", time.time() - start_time)
         start_time = time.time()
         fc6 = fully_connected_6_op(relu5, fc6_weights, fc6_bias, (10, ))
@@ -274,7 +274,7 @@ def main():
     end_time = time.time()
     duration = end_time - start_time
     print("Duration: ", duration, "seconds")
-    print(f"Accuracy = {num_correct / NUM_TESTS * 100}%")
+    print(f"Accuracy = {num_correct / 100 * 100}%")
     print(f"Total time: {duration} seconds")
 
 
